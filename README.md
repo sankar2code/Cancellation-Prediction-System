@@ -1,5 +1,7 @@
 # Foresight — Hotel Booking Cancellation Prediction System
 
+URL - https://sankar.work/Cancellation-Prediction-System/ 
+
 > Interactive, high‑fidelity UI mockups generated from `HotelBooking-PRD.pdf`.
 > A revenue‑manager workspace that scores every new booking for cancellation risk in real time, explains the drivers, and recommends the intervention that protects revenue — *before the guest cancels.*
 
