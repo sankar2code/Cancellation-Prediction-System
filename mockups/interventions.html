@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intervention ROI · Foresight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/app.css" />
+</head>
+<body>
+  <div id="scrim" class="fixed inset-0 bg-slate-900/50 z-30 hidden lg:hidden"></div>
+  <div class="flex min-h-screen">
+    <aside id="sidebar" class="w-64 shrink-0 bg-slate-900 flex flex-col fixed lg:sticky top-0 h-screen z-40 -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+    <div class="flex-1 flex flex-col min-w-0">
+      <header id="topbar" class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4 sm:px-6 py-3"></header>
+      <main class="p-4 sm:p-6 lg:p-8 w-full max-w-[1400px] mx-auto fade-up">
+
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div class="card card-pad"><div class="text-xs text-slate-500">Treatment cancel rate</div><div class="text-2xl font-bold tnum mt-1 text-emerald-600">18.2%</div><div class="text-xs text-slate-400">interventions applied</div></div>
+          <div class="card card-pad"><div class="text-xs text-slate-500">Control cancel rate</div><div class="text-2xl font-bold tnum mt-1 text-slate-700">31.5%</div><div class="text-xs text-slate-400">10% holdout, no action</div></div>
+          <div class="card card-pad"><div class="text-xs text-slate-500">Relative reduction</div><div class="text-2xl font-bold tnum mt-1 text-indigo-600">42%</div><div class="text-xs text-emerald-600">target ≥ 20%</div></div>
+          <div class="card card-pad"><div class="text-xs text-slate-500">Revenue recovered (QTD)</div><div class="text-2xl font-bold tnum mt-1">$128,400</div><div class="text-xs text-slate-400">counterfactual estimate</div></div>
+        </section>
+
+        <section class="grid lg:grid-cols-2 gap-4 mb-4">
+          <div class="card card-pad">
+            <h2 class="font-semibold text-slate-900">A/B holdout: did interventions reduce cancellations?</h2>
+            <p class="text-xs text-slate-500 mb-2">10% of high-risk bookings are randomly held out with no intervention — the only honest way to measure the North Star (counterfactual). Sample: 1,840 bookings.</p>
+            <div class="h-60"><canvas id="abChart"></canvas></div>
+            <div class="mt-2 rounded-lg bg-emerald-50 text-emerald-800 text-sm p-3 flex gap-2">
+              <i data-lucide="trending-down" style="width:16px;height:16px" class="shrink-0 mt-0.5"></i>
+              Intervened bookings cancelled <b>13.3 percentage points</b> less than the control group — a statistically significant 42% relative reduction.
+            </div>
+          </div>
+
+          <div class="card card-pad">
+            <h2 class="font-semibold text-slate-900">ROI by intervention type</h2>
+            <p class="text-xs text-slate-500 mb-2">Cancellations saved per 100 at-risk bookings, against the cost per intervention.</p>
+            <div class="h-60"><canvas id="roiChart"></canvas></div>
+            <div class="mt-2 text-sm text-slate-600">Best ROI: <b>deposit requests</b> (zero cost, 8.1 saved / 100). Non-refundable upgrades cost $35 but convert reliably.</div>
+          </div>
+        </section>
+
+        <div class="card overflow-hidden">
+          <div class="card-pad border-b border-slate-100"><h2 class="font-semibold text-slate-900">Intervention log</h2><p class="text-xs text-slate-500">Every action logged with booking ID + outcome for the model feedback loop (FR8)</p></div>
+          <div class="overflow-x-auto">
+            <table class="tbl">
+              <thead><tr><th>Booking</th><th>Intervention</th><th>Date</th><th>Cost</th><th>Outcome</th><th>Revenue saved</th></tr></thead>
+              <tbody id="logBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    renderShell('roi');
+    document.getElementById('logBody').innerHTML = INTERVENTIONS.map(i => `
+      <tr>
+        <td class="mono text-sm text-slate-600">${i.id}</td>
+        <td class="font-medium text-slate-800">${i.type}</td>
+        <td class="text-slate-500">${i.date}</td>
+        <td class="tnum text-slate-600">${i.cost ? '$'+i.cost : 'Free'}</td>
+        <td>${i.outcome==='Honoured' ? '<span class="badge badge-low"><span class="dot"></span>Honoured</span>' : '<span class="badge badge-high"><span class="dot"></span>Cancelled</span>'}</td>
+        <td class="tnum font-semibold ${i.saved?'text-emerald-600':'text-slate-400'}">${i.saved ? '+$'+ (Math.round((312*5))) : '$0'}</td>
+      </tr>`).join('');
+    lucide.createIcons();
+
+    Chart.defaults.font.family = "'Inter', sans-serif"; Chart.defaults.color = '#64748b';
+    new Chart(document.getElementById('abChart'), {
+      type:'bar',
+      data:{ labels:['Treatment (intervened)','Control (holdout)'],
+        datasets:[{ data:[18.2,31.5], backgroundColor:['#059669','#94a3b8'], borderRadius:8, barThickness:84 }] },
+      options:{ plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.parsed.y+'% cancellation rate'}}},
+        scales:{ y:{beginAtZero:true, grid:{color:'#f1f5f9'}, ticks:{callback:v=>v+'%'}}, x:{grid:{display:false}} }, maintainAspectRatio:false } });
+    new Chart(document.getElementById('roiChart'), {
+      type:'bar',
+      data:{ labels: ROI_BY_TYPE.map(r=>r.type),
+        datasets:[{ data: ROI_BY_TYPE.map(r=>r.savedPer100), backgroundColor:'#4f46e5', borderRadius:6, barThickness:26 }] },
+      options:{ indexAxis:'y', plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.parsed.x+' saved / 100 bookings'}}},
+        scales:{ x:{beginAtZero:true, grid:{color:'#f1f5f9'}}, y:{grid:{display:false}} }, maintainAspectRatio:false } });
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Segment Analytics · Foresight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/app.css" />
+</head>
+<body>
+  <div id="scrim" class="fixed inset-0 bg-slate-900/50 z-30 hidden lg:hidden"></div>
+  <div class="flex min-h-screen">
+    <aside id="sidebar" class="w-64 shrink-0 bg-slate-900 flex flex-col fixed lg:sticky top-0 h-screen z-40 -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+    <div class="flex-1 flex flex-col min-w-0">
+      <header id="topbar" class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4 sm:px-6 py-3"></header>
+      <main class="p-4 sm:p-6 lg:p-8 w-full max-w-[1400px] mx-auto fade-up">
+
+        <div class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 flex gap-3 mb-5">
+          <i data-lucide="lightbulb" class="text-indigo-600 shrink-0 mt-0.5" style="width:20px;height:20px"></i>
+          <div class="text-sm text-indigo-900">
+            <b>Policy insight for GMs.</b> Lead time and price are the dominant cancellation drivers. This view lets you calibrate
+            deposit stringency by segment — tighten requirements on long-lead, high-price online bookings without penalising reliable corporate bookers.
+          </div>
+        </div>
+
+        <section class="grid lg:grid-cols-2 gap-4 mb-4">
+          <div class="card card-pad">
+            <h2 class="font-semibold text-slate-900">Cancellation rate by market segment</h2>
+            <p class="text-xs text-slate-500 mb-2">Online dominates volume (64%) and carries the highest cancellation rate</p>
+            <div class="h-60"><canvas id="segChart"></canvas></div>
+            <div id="segMix" class="mt-3 grid grid-cols-4 gap-2 text-center"></div>
+          </div>
+          <div class="card card-pad">
+            <h2 class="font-semibold text-slate-900">Cancellation rate by lead-time band</h2>
+            <p class="text-xs text-slate-500 mb-2">The clearest signal: bookings &gt;180 days out cancel ~5× more than &lt;30 days</p>
+            <div class="h-60"><canvas id="leadChart"></canvas></div>
+          </div>
+        </section>
+
+        <section class="grid lg:grid-cols-2 gap-4">
+          <div class="card card-pad">
+            <h2 class="font-semibold text-slate-900">Cancellation rate by price band</h2>
+            <p class="text-xs text-slate-500 mb-2">Higher room prices correlate with higher cancellation</p>
+            <div class="h-60"><canvas id="priceChart"></canvas></div>
+          </div>
+          <div class="card card-pad">
+            <h2 class="font-semibold text-slate-900">Seasonal pattern</h2>
+            <p class="text-xs text-slate-500 mb-2">Volume spikes 5× in months 8–10; cancellation ratio stays elevated in peak season</p>
+            <div class="h-60"><canvas id="seasonChart"></canvas></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    renderShell('segments');
+    document.getElementById('segMix').innerHTML = SEGMENTS.map(s => `
+      <div class="rounded-lg bg-slate-50 py-2"><div class="text-sm font-bold tnum text-slate-800">${s.volume}%</div><div class="text-[11px] text-slate-500">${s.name}</div></div>`).join('');
+    lucide.createIcons();
+
+    Chart.defaults.font.family = "'Inter', sans-serif"; Chart.defaults.color = '#64748b';
+    const pct = { plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>' '+(c.parsed.y ?? c.parsed.x)+'% cancellation'}}},
+      scales:{ y:{beginAtZero:true, grid:{color:'#f1f5f9'}, ticks:{callback:v=>v+'%'}}, x:{grid:{display:false}} }, maintainAspectRatio:false };
+
+    new Chart(document.getElementById('segChart'), { type:'bar',
+      data:{ labels: SEGMENTS.map(s=>s.name), datasets:[{ data: SEGMENTS.map(s=>s.cancelRate), backgroundColor:'#4f46e5', borderRadius:6, barThickness:46 }] }, options: pct });
+    new Chart(document.getElementById('leadChart'), { type:'bar',
+      data:{ labels: LEAD_BANDS.map(l=>l.band), datasets:[{ data: LEAD_BANDS.map(l=>l.rate), backgroundColor:['#34d399','#fbbf24','#f97316','#dc2626'], borderRadius:6, barThickness:46 }] }, options: pct });
+    new Chart(document.getElementById('priceChart'), { type:'bar',
+      data:{ labels: PRICE_BANDS.map(p=>p.band), datasets:[{ data: PRICE_BANDS.map(p=>p.rate), backgroundColor:'#6366f1', borderRadius:6, barThickness:46 }] }, options: pct });
+    new Chart(document.getElementById('seasonChart'), { type:'line',
+      data:{ labels:['J','F','M','A','M','J','J','A','S','O','N','D'],
+        datasets:[
+          { label:'Volume index', data:[20,22,28,35,40,55,70,100,96,88,42,30], borderColor:'#94a3b8', backgroundColor:'rgba(148,163,184,.1)', fill:true, tension:.4, pointRadius:0, yAxisID:'y1' },
+          { label:'Cancel rate', data:[26,25,27,28,29,31,33,34,33,32,28,27], borderColor:'#dc2626', tension:.4, pointRadius:0, borderWidth:2.5, yAxisID:'y' } ] },
+      options:{ plugins:{legend:{labels:{usePointStyle:true}}},
+        scales:{ y:{position:'left', grid:{color:'#f1f5f9'}, ticks:{callback:v=>v+'%'}, min:20, max:38}, y1:{position:'right', grid:{display:false}, display:false}, x:{grid:{display:false}} }, maintainAspectRatio:false } });
+  </script>
+</body>
+</html>

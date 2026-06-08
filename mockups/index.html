@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foresight — Cancellation Prediction System · Mockups</title>
+  <meta name="description" content="Interactive high-fidelity mockups generated from the Hotel Booking Cancellation Prediction System PRD." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/app.css" />
+</head>
+<body>
+  <!-- Hero -->
+  <header class="relative overflow-hidden text-white" style="background:linear-gradient(150deg,#312e81,#4f46e5 55%,#6366f1)">
+    <div class="absolute -top-24 -right-16 w-96 h-96 rounded-full bg-white/10 blur-3xl"></div>
+    <div class="absolute bottom-0 -left-20 w-80 h-80 rounded-full bg-indigo-300/20 blur-3xl"></div>
+    <div class="relative max-w-6xl mx-auto px-6 pt-8 pb-16">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-white/15 ring-1 ring-white/30 grid place-items-center"><i data-lucide="radar" style="width:22px;height:22px"></i></div>
+          <div><div class="font-semibold text-lg leading-tight">Foresight</div><div class="text-xs text-indigo-200">Cancellation Prediction System</div></div>
+        </div>
+        <span class="hidden sm:inline-flex badge bg-white/15 text-white">Interactive mockup · v1</span>
+      </div>
+
+      <div class="mt-14 max-w-3xl">
+        <span class="badge bg-white/15 text-indigo-100 mb-4">Generated from HotelBooking-PRD.pdf</span>
+        <h1 class="text-4xl sm:text-5xl font-bold leading-[1.1]">See which bookings will cancel — before the revenue window closes.</h1>
+        <p class="mt-5 text-lg text-indigo-100 leading-relaxed max-w-2xl">A revenue-manager workspace that scores every new booking for cancellation risk in real time, explains the top drivers, and recommends the intervention that protects revenue. Built on a Random Forest model with 87.9% test accuracy.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="login.html" class="btn bg-white text-indigo-700 hover:bg-indigo-50"><i data-lucide="log-in"></i> Open the workspace</a>
+          <a href="dashboard.html" class="btn bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20"><i data-lucide="layout-dashboard"></i> Skip to dashboard</a>
+        </div>
+      </div>
+
+      <div class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl">
+        <div><div class="text-3xl font-bold tnum">87.9%</div><div class="text-xs text-indigo-200">model test accuracy</div></div>
+        <div><div class="text-3xl font-bold tnum">&lt; 2s</div><div class="text-xs text-indigo-200">scoring latency</div></div>
+        <div><div class="text-3xl font-bold tnum">33→25%</div><div class="text-xs text-indigo-200">cancellation-rate target</div></div>
+        <div><div class="text-3xl font-bold tnum">$174B</div><div class="text-xs text-indigo-200">online booking market '26</div></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6">
+
+    <!-- Screens -->
+    <section class="py-14">
+      <h2 class="text-2xl font-bold text-slate-900">Explore the screens</h2>
+      <p class="text-slate-500 mt-1">Eleven connected views. Every screen links to the others — click in and navigate like the real product.</p>
+      <div id="screens" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-7"></div>
+    </section>
+
+    <!-- Flow map -->
+    <section class="py-6">
+      <h2 class="text-2xl font-bold text-slate-900">How it works</h2>
+      <p class="text-slate-500 mt-1">The five PRD user flows, end to end.</p>
+      <div class="card card-pad mt-6 overflow-x-auto">
+        <div class="flex items-stretch gap-3 min-w-[820px]">
+          <div id="flow"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Personas -->
+    <section class="py-10">
+      <h2 class="text-2xl font-bold text-slate-900">Who it's for</h2>
+      <div class="grid sm:grid-cols-3 gap-4 mt-6">
+        <div class="card card-pad"><div class="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center mb-3"><i data-lucide="user-cog" class="text-indigo-600"></i></div><h3 class="font-semibold text-slate-900">Revenue Manager</h3><p class="text-sm text-slate-500 mt-1">Primary user. Works the at-risk queue, logs interventions, tunes the risk threshold.</p></div>
+        <div class="card card-pad"><div class="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center mb-3"><i data-lucide="briefcase" class="text-indigo-600"></i></div><h3 class="font-semibold text-slate-900">General Manager</h3><p class="text-sm text-slate-500 mt-1">Weekly reporting — cancellation forecast, intervention ROI, model accuracy, segment policy.</p></div>
+        <div class="card card-pad"><div class="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center mb-3"><i data-lucide="concierge-bell" class="text-indigo-600"></i></div><h3 class="font-semibold text-slate-900">Front Desk / Ops</h3><p class="text-sm text-slate-500 mt-1">Receives advisory overbooking buffers and high-risk arrival notifications for check-in prep.</p></div>
+      </div>
+    </section>
+
+    <!-- Traceability -->
+    <section class="py-10">
+      <h2 class="text-2xl font-bold text-slate-900">PRD traceability</h2>
+      <p class="text-slate-500 mt-1">Each screen maps back to specific requirements in the PRD.</p>
+      <div class="card overflow-hidden mt-6">
+        <div class="overflow-x-auto"><table class="tbl">
+          <thead><tr><th>Screen</th><th>Serves</th><th>PRD reference</th></tr></thead>
+          <tbody id="trace"></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 mt-10">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-sm text-slate-500 flex flex-col sm:flex-row gap-3 justify-between">
+      <div><b class="text-slate-700">Foresight</b> — interactive mockup generated from <span class="mono">HotelBooking-PRD.pdf</span>. Not a production application; all data is illustrative.</div>
+      <div>Tailwind · Chart.js · Lucide — zero build, opens from <span class="mono">file://</span></div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    const SCREENS = [
+      ['login.html','Sign in','log-in','Branded entry point to the revenue-manager workspace.'],
+      ['dashboard.html','Dashboard','layout-dashboard','KPIs, revenue recovered, live alerts and today\'s at-risk queue.'],
+      ['at-risk-queue.html','At-Risk Queue','list-checks','Bookings ranked by risk with a working threshold filter.'],
+      ['booking-detail.html','Booking Detail','file-search','Risk gauge, top-3 plain-language drivers, all 16 features, intervene.'],
+      ['forecast.html','Overbooking Forecast','calendar-clock','Per-arrival cancellation forecast at 30/14/7-day horizons.'],
+      ['automation-rules.html','Automation Rules','workflow','IF/THEN policy engine with compliance guardrails.'],
+      ['interventions.html','Intervention ROI','target','A/B holdout proving interventions cut cancellations 42%.'],
+      ['model-monitoring.html','Model Monitoring','activity','Accuracy trend, confusion matrix, model comparison, retraining.'],
+      ['segment-analytics.html','Segment Analytics','pie-chart','Cancellation drivers by segment, lead time and price.'],
+      ['settings.html','Settings','settings','Risk threshold, alerts, automation guardrails and GDPR.'],
+    ];
+    document.getElementById('screens').innerHTML = SCREENS.map(([href,t,ic,d]) => `
+      <a href="${href}" class="card card-pad group hover:shadow-md hover:-translate-y-0.5 transition block">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center group-hover:bg-indigo-600 transition"><i data-lucide="${ic}" class="text-indigo-600 group-hover:text-white transition" style="width:20px;height:20px"></i></div>
+          <h3 class="font-semibold text-slate-900">${t}</h3>
+          <i data-lucide="arrow-up-right" class="ml-auto text-slate-300 group-hover:text-indigo-600 transition" style="width:18px;height:18px"></i>
+        </div>
+        <p class="text-sm text-slate-500 mt-3 leading-snug">${d}</p>
+      </a>`).join('');
+
+    const FLOWS = [
+      ['Real-time scoring','Booking created → model scores in <2s → top-3 drivers written back'],
+      ['RM intervention','Open at-risk queue → review drivers → select & log intervention'],
+      ['Policy automation','Set IF/THEN rules → engine auto-applies to qualifying bookings'],
+      ['Retraining','Monthly retrain → evaluate vs 85% gate → promote or hold'],
+      ['Reporting','Weekly accuracy → monthly performance → quarterly policy review'],
+    ];
+    document.getElementById('flow').outerHTML = FLOWS.map(([t,d],i) => `
+      <div class="flex items-center gap-3">
+        <div class="w-52 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white grid place-items-center text-sm font-bold mb-2">${i+1}</div>
+          <div class="font-semibold text-sm text-slate-900">${t}</div>
+          <div class="text-xs text-slate-500 mt-1 leading-snug">${d}</div>
+        </div>
+        ${i<FLOWS.length-1?'<i data-lucide="chevron-right" class="text-slate-300 shrink-0"></i>':''}
+      </div>`).join('');
+
+    const TRACE = [
+      ['Dashboard','Actionable overview + North Star','§8 Metrics, FR3, FR4'],
+      ['At-Risk Queue','Ranked bookings + threshold filter','FR1, FR3, FR12, Flow 2'],
+      ['Booking Detail','Explainability + auditability','FR2, FR10, Story 1'],
+      ['Overbooking Forecast','Per-arrival forecast + buffer','FR9, Story 3'],
+      ['Automation Rules','Policy auto-actions','FR7, Flow 3'],
+      ['Intervention ROI','Effectiveness measurement','FR8, Story 4'],
+      ['Model Monitoring','Accuracy + retraining','FR5, FR6, §5'],
+      ['Segment Analytics','Policy calibration by segment','Story 2, §2.1'],
+      ['Settings','Threshold, alerts, compliance','FR4, §4.3'],
+    ];
+    document.getElementById('trace').innerHTML = TRACE.map(([s,p,r]) => `
+      <tr><td class="font-medium text-slate-800">${s}</td><td class="text-slate-600">${p}</td><td class="mono text-xs text-slate-500">${r}</td></tr>`).join('');
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

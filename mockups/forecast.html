@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overbooking Forecast · Foresight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/app.css" />
+</head>
+<body>
+  <div id="scrim" class="fixed inset-0 bg-slate-900/50 z-30 hidden lg:hidden"></div>
+  <div class="flex min-h-screen">
+    <aside id="sidebar" class="w-64 shrink-0 bg-slate-900 flex flex-col fixed lg:sticky top-0 h-screen z-40 -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+    <div class="flex-1 flex flex-col min-w-0">
+      <header id="topbar" class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4 sm:px-6 py-3"></header>
+      <main class="p-4 sm:p-6 lg:p-8 w-full max-w-[1400px] mx-auto fade-up">
+
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div class="card card-pad"><div class="text-xs text-slate-500">Predicted cancellations (next 7 arrivals)</div><div class="text-2xl font-bold tnum mt-1">330</div></div>
+          <div class="card card-pad"><div class="text-xs text-slate-500">Recommended overbooking buffer</div><div class="text-2xl font-bold tnum mt-1 text-indigo-600">95 rooms</div></div>
+          <div class="card card-pad"><div class="text-xs text-slate-500">Forecast accuracy (MAPE)</div><div class="text-2xl font-bold tnum mt-1 text-emerald-600">94.1%</div></div>
+          <div class="card card-pad"><div class="text-xs text-slate-500">Est. occupancy uplift</div><div class="text-2xl font-bold tnum mt-1">+4.2pts</div></div>
+        </section>
+
+        <div class="card card-pad mb-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+            <div>
+              <h2 class="font-semibold text-slate-900">Predicted vs actual cancellations by arrival date</h2>
+              <p class="text-xs text-slate-500">Confidence interval tightens as arrival approaches (FR9: 30/14/7-day horizons)</p>
+            </div>
+            <div class="seg" id="horizon">
+              <button data-h="30" class="on" onclick="setHorizon(30,this)">30-day</button>
+              <button data-h="14" onclick="setHorizon(14,this)">14-day</button>
+              <button data-h="7" onclick="setHorizon(7,this)">7-day</button>
+            </div>
+          </div>
+          <div class="h-72"><canvas id="fcChart"></canvas></div>
+        </div>
+
+        <div class="card overflow-hidden">
+          <div class="card-pad border-b border-slate-100"><h2 class="font-semibold text-slate-900">Per-arrival forecast detail</h2></div>
+          <div class="overflow-x-auto">
+            <table class="tbl">
+              <thead><tr>
+                <th>Arrival date</th><th>Bookings</th><th>Predicted cancellations</th><th>Confidence interval</th>
+                <th>Recommended buffer</th><th>Actual</th><th>Variance</th>
+              </tr></thead>
+              <tbody id="fcBody"></tbody>
+            </table>
+          </div>
+          <div class="card-pad border-t border-slate-100 text-xs text-slate-500 flex items-center gap-2">
+            <i data-lucide="info" style="width:14px;height:14px"></i>
+            Buffer recommendations are advisory — the operations manager confirms before applying to inventory (§4.3).
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    renderShell('forecast');
+    let H = 30, chart;
+    const factor = { 30: 1, 14: 0.65, 7: 0.4 };
+
+    function ci(row){ const half = (row.hi - row.lo) / 2 * factor[H]; return { lo: Math.round(row.predicted - half), hi: Math.round(row.predicted + half) }; }
+
+    function drawTable(){
+      document.getElementById('fcBody').innerHTML = FORECAST.map(r => {
+        const c = ci(r);
+        const variance = r.actual == null ? '—' : (r.actual - r.predicted >= 0 ? '+' : '') + (r.actual - r.predicted);
+        const vClass = r.actual == null ? 'text-slate-400' : Math.abs(r.actual - r.predicted) <= 4 ? 'text-emerald-600' : 'text-amber-600';
+        return `<tr>
+          <td class="font-medium text-slate-800">${r.date}</td>
+          <td class="tnum text-slate-600">${r.bookings}</td>
+          <td class="tnum font-semibold text-slate-900">${r.predicted}</td>
+          <td class="tnum text-slate-500">${c.lo}–${c.hi}</td>
+          <td><span class="badge badge-brand tnum">+${r.buffer} rooms</span></td>
+          <td class="tnum text-slate-600">${r.actual ?? '—'}</td>
+          <td class="tnum font-semibold ${vClass}">${variance}</td>
+        </tr>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#64748b';
+    function drawChart(){
+      const labels = FORECAST.map(r => r.date.replace(', 2026',''));
+      const lo = FORECAST.map(r => ci(r).lo), hi = FORECAST.map(r => ci(r).hi);
+      const data = {
+        labels,
+        datasets: [
+          { label: 'CI upper', data: hi, borderColor:'transparent', backgroundColor:'rgba(79,70,229,.10)', pointRadius:0, fill:'+1', tension:.3 },
+          { label: 'CI lower', data: lo, borderColor:'transparent', backgroundColor:'rgba(79,70,229,.10)', pointRadius:0, fill:false, tension:.3 },
+          { label: 'Predicted', data: FORECAST.map(r=>r.predicted), borderColor:'#4f46e5', backgroundColor:'#4f46e5', pointRadius:3, borderWidth:2.5, tension:.3 },
+          { label: 'Actual', data: FORECAST.map(r=>r.actual), borderColor:'#0f172a', backgroundColor:'#0f172a', pointRadius:4, pointStyle:'rectRot', borderWidth:2, borderDash:[5,4], tension:.3, spanGaps:false },
+        ]
+      };
+      const opts = { plugins:{ legend:{ labels:{ filter:i=>!i.text.startsWith('CI'), usePointStyle:true } } },
+        scales:{ y:{ beginAtZero:true, grid:{color:'#f1f5f9'}, title:{display:true,text:'cancellations'} }, x:{grid:{display:false}} },
+        maintainAspectRatio:false };
+      if (chart) chart.destroy();
+      chart = new Chart(document.getElementById('fcChart'), { type:'line', data, options:opts });
+    }
+    function setHorizon(h, el){ H = h; document.querySelectorAll('#horizon button').forEach(b=>b.classList.remove('on')); el.classList.add('on'); drawTable(); drawChart(); }
+    drawTable(); drawChart();
+  </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Risk Detail · Foresight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/app.css" />
+</head>
+<body>
+  <div id="scrim" class="fixed inset-0 bg-slate-900/50 z-30 hidden lg:hidden"></div>
+  <div class="flex min-h-screen">
+    <aside id="sidebar" class="w-64 shrink-0 bg-slate-900 flex flex-col fixed lg:sticky top-0 h-screen z-40 -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+    <div class="flex-1 flex flex-col min-w-0">
+      <header id="topbar" class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4 sm:px-6 py-3"></header>
+      <main class="p-4 sm:p-6 lg:p-8 w-full max-w-[1400px] mx-auto fade-up">
+
+        <a href="at-risk-queue.html" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 mb-4">
+          <i data-lucide="arrow-left" style="width:16px;height:16px"></i> Back to queue</a>
+
+        <div id="hdr" class="mb-5"></div>
+
+        <div class="grid lg:grid-cols-3 gap-4">
+          <!-- Main column -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="card card-pad flex flex-col sm:flex-row items-center gap-6">
+              <div id="gauge" class="relative shrink-0" style="width:168px;height:168px"></div>
+              <div class="flex-1">
+                <div id="riskSummary"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-pad border-b border-slate-100">
+                <h2 class="font-semibold text-slate-900 flex items-center gap-2"><i data-lucide="lightbulb" class="text-amber-500" style="width:18px;height:18px"></i> Why this booking is at risk</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Top 3 contributing drivers in plain language — the explainability layer required for revenue-manager trust (FR2).</p>
+              </div>
+              <div id="drivers" class="card-pad space-y-4"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-pad border-b border-slate-100 flex items-center justify-between">
+                <h2 class="font-semibold text-slate-900">Model features at scoring time</h2>
+                <span class="badge badge-neutral">16 features · logged (FR10)</span>
+              </div>
+              <div id="features" class="card-pad grid sm:grid-cols-2 gap-x-8 gap-y-1"></div>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div class="space-y-4">
+            <div class="card card-pad">
+              <h2 class="font-semibold text-slate-900 mb-3">Recommended interventions</h2>
+              <div id="actions" class="space-y-2"></div>
+              <p class="text-xs text-slate-400 mt-3 leading-relaxed">Soft actions (upgrade, outreach) may auto-apply under policy rules. Punitive actions (deposit, rate change) require human review for the first 90 days — GDPR Art. 22.</p>
+            </div>
+
+            <div class="card card-pad">
+              <h2 class="font-semibold text-slate-900 mb-3">Score history</h2>
+              <div id="history" class="space-y-3"></div>
+            </div>
+
+            <div class="card card-pad">
+              <h2 class="font-semibold text-slate-900 mb-3">Audit trail</h2>
+              <ul id="audit" class="space-y-3 text-sm"></ul>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Intervene modal -->
+  <div id="interveneModal" class="modal-overlay">
+    <div class="modal">
+      <div class="card-pad border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-semibold text-slate-900">Log an intervention</h3>
+        <button class="text-slate-400 hover:text-slate-700" onclick="closeModal('interveneModal')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="card-pad space-y-4">
+        <div><label class="label">Intervention type</label>
+          <select class="select" id="intType">
+            <option value="upsell">Offer non-refundable upgrade</option>
+            <option value="outreach">Send pre-stay outreach</option>
+            <option value="deposit">Request deposit confirmation</option>
+            <option value="buffer">Flag for overbooking buffer</option>
+          </select></div>
+        <div><label class="label">Note (optional)</label>
+          <textarea class="input" rows="3" placeholder="Context for the model feedback loop…"></textarea></div>
+        <div class="rounded-lg bg-indigo-50 text-indigo-800 text-xs p-3 flex gap-2">
+          <i data-lucide="info" style="width:15px;height:15px" class="shrink-0 mt-0.5"></i>
+          This intervention is logged with the booking ID and linked to the eventual outcome for ROI tracking (FR8).</div>
+      </div>
+      <div class="card-pad border-t border-slate-100 flex justify-end gap-2">
+        <button class="btn btn-ghost" onclick="closeModal('interveneModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="logIntervention()"><i data-lucide="check"></i> Log intervention</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    renderShell('detail');
+    const id = getParam('id') || BOOKINGS[0].id;
+    const b = BOOKINGS.find(x => x.id === id) || BOOKINGS[0];
+    const arrMonth = b.arrival.split(' ')[0];
+
+    document.getElementById('hdr').innerHTML = `
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="text-2xl font-bold text-slate-900">${b.guest}</h1>
+        <span class="mono text-sm text-slate-400">${b.id}</span>
+        <span class="badge badge-${band(b.score)}"><span class="dot"></span>${bandLabel(b.score)}</span>
+      </div>
+      <p class="text-slate-500 text-sm mt-1">${b.room} · ${b.segment} channel · arriving ${b.arrival}</p>`;
+
+    renderGauge(document.getElementById('gauge'), b.score);
+
+    const rec = ACTIONS[b.recommended];
+    document.getElementById('riskSummary').innerHTML = `
+      <div class="text-sm text-slate-500">This booking scored <b class="risk-${band(b.score)}">${b.score}%</b> cancellation probability at reservation time
+        ${b.score >= MODEL.threshold ? '— above the 70% alert threshold.' : '— below the alert threshold.'}</div>
+      <div class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3.5">
+        <div class="text-xs font-semibold uppercase tracking-wide text-indigo-500">Recommended action</div>
+        <div class="mt-1 flex items-center gap-2 font-semibold text-slate-800"><i data-lucide="${rec.icon}" class="text-indigo-600" style="width:18px;height:18px"></i> ${rec.label}</div>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500">
+        <span>Scored in <b class="text-slate-700">${(MODEL.scoringLatencyMs/1000).toFixed(1)}s</b></span>
+        <span>Model <b class="text-slate-700">${MODEL.name} ${MODEL.version}</b></span>
+        <span>Prior cancellations <b class="text-slate-700">${b.prevCancel}</b></span>
+      </div>`;
+
+    // Drivers
+    document.getElementById('drivers').innerHTML = b.drivers.map(d => {
+      const f = FEATURES.find(x => x.key === d.f) || { label: d.f, weight: 0.1 };
+      const up = d.dir === 'up';
+      const w = Math.round(f.weight * 100 / 0.22 * 100) / 100; // scale vs top feature
+      return `<div>
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg grid place-items-center shrink-0 ${up?'bg-red-50 text-red-600':'bg-emerald-50 text-emerald-600'}">
+            <i data-lucide="${up?'trending-up':'trending-down'}" style="width:16px;height:16px"></i></div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between gap-3">
+              <span class="font-medium text-slate-800">${f.label}</span>
+              <span class="text-xs font-semibold ${up?'text-red-600':'text-emerald-600'}">${up?'increases risk':'lowers risk'}</span>
+            </div>
+            <p class="text-sm text-slate-500 mt-0.5">${d.text}</p>
+            <div class="bar-track mt-2"><div class="bar-fill" style="width:${Math.min(w,100)}%;background:${up?'#dc2626':'#059669'}"></div></div>
+          </div>
+        </div></div>`;
+    }).join('');
+
+    // Features (16)
+    const feats = [
+      ['lead_time', b.leadTime + ' days'], ['avg_price_per_room', '$' + b.price],
+      ['arrival_date', b.arrival], ['arrival_month', arrMonth],
+      ['no_of_week_nights', b.weekNights], ['no_of_weekend_nights', b.weekendNights],
+      ['no_of_special_requests', b.special], ['type_of_meal_plan', b.meal],
+      ['room_type_reserved', b.room], ['market_segment_type', b.segment],
+      ['repeated_guest', b.repeat ? 'Yes' : 'No'], ['no_of_previous_cancellations', b.prevCancel],
+      ['required_car_parking_space', b.parking ? 'Yes' : 'No'], ['booking_channel', b.channel],
+      ['no_of_adults', 2], ['no_of_children', 0],
+    ];
+    document.getElementById('features').innerHTML = feats.map(([k, v]) => `
+      <div class="flex items-center justify-between py-1.5 border-b border-slate-50">
+        <span class="mono text-xs text-slate-500">${k}</span><span class="text-sm font-medium text-slate-800">${v}</span></div>`).join('');
+
+    // Actions
+    const order = ['upsell','outreach','deposit','buffer'];
+    document.getElementById('actions').innerHTML = order.map(k => {
+      const a = ACTIONS[k], primary = k === b.recommended;
+      return `<button class="btn ${primary?'btn-primary':'btn-ghost'} w-full justify-start" onclick="openIntervene('${k}')">
+        <i data-lucide="${a.icon}"></i> ${a.label}${primary?' <span class="ml-auto text-[10px] font-bold uppercase opacity-80">recommended</span>':''}</button>`;
+    }).join('');
+
+    // Score history
+    const hist = SCORE_HISTORY[b.id] || [
+      { t: 'At booking', v: Math.max(0, b.score - 3) }, { t: '30 days out', v: Math.max(0, b.score - 1) }, { t: '7 days out', v: b.score } ];
+    document.getElementById('history').innerHTML = hist.map((h, i) => `
+      <div class="flex items-center gap-3">
+        <div class="w-2 h-2 rounded-full" style="background:${riskColor(h.v)}"></div>
+        <span class="text-sm text-slate-600 flex-1">${h.t}</span>
+        <span class="tnum font-semibold risk-${band(h.v)}">${h.v}%</span>
+      </div>${i<hist.length-1?'<div class="ml-[3px] h-3 w-px bg-slate-200"></div>':''}`).join('');
+
+    // Audit
+    document.getElementById('audit').innerHTML = [
+      ['file-clock', `Scored ${b.score}% by ${MODEL.name} ${MODEL.version}`, 'at reservation creation'],
+      ['list', '16/16 features captured from PMS', 'full-confidence prediction'],
+      ['shield', 'Decision logged for GDPR Art. 22 audit', 'guest right-to-explanation'],
+    ].map(([ic, t, s]) => `<li class="flex gap-2.5"><i data-lucide="${ic}" class="text-slate-400 shrink-0 mt-0.5" style="width:15px;height:15px"></i>
+      <div><div class="text-slate-700">${t}</div><div class="text-xs text-slate-400">${s}</div></div></li>`).join('');
+
+    lucide.createIcons();
+
+    function openIntervene(k){ document.getElementById('intType').value = k; openModal('interveneModal'); }
+    function logIntervention(){
+      const label = ACTIONS[document.getElementById('intType').value].label;
+      closeModal('interveneModal');
+      toast('Logged: ' + label + ' · ' + b.id);
+    }
+  </script>
+</body>
+</html>
