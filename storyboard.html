@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Storyboard — Foresight · All screens</title>
+  <meta name="description" content="Every Foresight mockup screen, stacked in one scrollable storyboard." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/app.css" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .frame-wrap { height: 760px; }
+    .frame-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+  </style>
+</head>
+<body class="bg-slate-100">
+
+  <!-- Sticky header / table of contents -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white grid place-items-center"><i data-lucide="layers" style="width:18px;height:18px"></i></div>
+        <div>
+          <div class="font-semibold text-slate-900 leading-tight">Foresight — Storyboard</div>
+          <div class="text-xs text-slate-500">All 10 screens, top to bottom · click any header to open it full-page</div>
+        </div>
+      </div>
+      <a href="index.html" class="btn btn-ghost text-sm"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Back to hub</a>
+    </div>
+    <nav class="max-w-5xl mx-auto px-6 pb-3 -mt-1 overflow-x-auto">
+      <div id="toc" class="flex gap-2 text-xs whitespace-nowrap"></div>
+    </nav>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8 space-y-10" id="storyboard"></main>
+
+  <footer class="border-t border-slate-200 mt-6">
+    <div class="max-w-5xl mx-auto px-6 py-8 text-sm text-slate-500">
+      Each panel below is the live screen in a scrollable frame — interact with it directly, or click its title to open it full-page.
+      <span class="mono">storyboard.html</span> · part of the Foresight mockup set generated from <span class="mono">HotelBooking-PRD.pdf</span>.
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    const SCREENS = [
+      ['login.html',            'Sign in',               'log-in',          'Branded entry point to the revenue-manager workspace.'],
+      ['dashboard.html',        'Dashboard',             'layout-dashboard','KPIs, revenue recovered, live alerts and today\'s at-risk queue.'],
+      ['at-risk-queue.html',    'At-Risk Queue',         'list-checks',     'Bookings ranked by risk with a working threshold filter.'],
+      ['booking-detail.html',   'Booking Detail',        'file-search',     'Risk gauge, top-3 plain-language drivers, all 16 features, intervene.'],
+      ['forecast.html',         'Overbooking Forecast',  'calendar-clock',  'Per-arrival cancellation forecast at 30/14/7-day horizons.'],
+      ['automation-rules.html', 'Automation Rules',      'workflow',        'IF/THEN policy engine with compliance guardrails.'],
+      ['interventions.html',    'Intervention ROI',      'target',          'A/B holdout proving interventions cut cancellations 42%.'],
+      ['model-monitoring.html', 'Model Monitoring',      'activity',        'Accuracy trend, confusion matrix, model comparison, retraining.'],
+      ['segment-analytics.html','Segment Analytics',     'pie-chart',       'Cancellation drivers by segment, lead time and price.'],
+      ['settings.html',         'Settings',              'settings',        'Risk threshold, alerts, automation guardrails and GDPR.'],
+    ];
+
+    document.getElementById('toc').innerHTML = SCREENS.map(([href,t], i) => `
+      <a href="#s${i+1}" class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 transition">${i+1}. ${t}</a>`).join('');
+
+    document.getElementById('storyboard').innerHTML = SCREENS.map(([href,t,ic,d], i) => `
+      <section id="s${i+1}" class="scroll-mt-32">
+        <a href="${href}" class="group flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 grid place-items-center group-hover:bg-indigo-600 transition shrink-0">
+            <i data-lucide="${ic}" class="text-indigo-600 group-hover:text-white transition" style="width:18px;height:18px"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 class="font-semibold text-slate-900 group-hover:text-indigo-700 transition flex items-center gap-1.5">
+              ${i+1}. ${t}
+              <i data-lucide="arrow-up-right" class="text-slate-300 group-hover:text-indigo-600 transition" style="width:15px;height:15px"></i>
+            </h2>
+            <p class="text-sm text-slate-500 truncate">${d}</p>
+          </div>
+        </a>
+        <div class="frame-wrap rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+          <iframe src="${href}" title="${t}"></iframe>
+        </div>
+      </section>`).join('');
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>
